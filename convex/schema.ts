@@ -6,26 +6,24 @@ export default defineSchema({
     name: v.string(),
     email: v.string(),
     image: v.optional(v.string()),
-    createdAt: v.number(),
+    // No manual timestamps - Convex provides _creationTime
   })
-    .index("by_email", ["email"])
-    .index("by_created_at", ["createdAt"]),
+    .index("by_email", ["email"]),
 
   conversations: defineTable({
     userId: v.id("users"),
     title: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
+    // No manual timestamps - Convex provides _creationTime
   })
     .index("by_user", ["userId"])
-    .index("by_updated_at", ["updatedAt"]),
+    .index("by_created_at", ["_creationTime"]),
 
   messages: defineTable({
     conversationId: v.id("conversations"),
     role: v.union(v.literal("user"), v.literal("assistant")),
     content: v.string(),
-    createdAt: v.number(),
+    // No manual timestamps - Convex provides _creationTime
   })
     .index("by_conversation", ["conversationId"])
-    .index("by_created_at", ["createdAt"]),
+    .index("by_created_at", ["_creationTime"]),
 });

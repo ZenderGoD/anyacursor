@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Send, Bot, User } from "lucide-react";
 
+// Raj's Type Definitions
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -13,7 +14,13 @@ interface Message {
   timestamp: Date;
 }
 
-export function ChatInterface() {
+export interface ChatInterfaceProps {
+  className?: string;
+  onError?: (error: string) => void;
+}
+
+export function ChatInterface({ className, onError }: ChatInterfaceProps) {
+  // Raj's State Management Pattern
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -24,43 +31,75 @@ export function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  // Raj's Memoized Values
+  const canSend = useMemo(() => {
+    return input.trim().length > 0 && !isLoading;
+  }, [input, isLoading]);
+
+  // Raj's Callback Pattern
+  const handleSend = useCallback(async () => {
+    if (!canSend) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input,
+      content: input.trim(),
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setError(null);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Simulate AI response
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: `I received your message: "${userMessage.content}". This is a placeholder response. In a real implementation, this would call the AI SDK.`,
         timestamp: new Date(),
       };
+      
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
+      setError(errorMessage);
+      onError?.(errorMessage);
+    } finally {
       setIsLoading(false);
-    }, 1000);
-  };
+    }
+  }, [canSend, input, onError]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
+
+  // Raj's Early Returns for Error States
+  if (error) {
+    return (
+      <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => setError(null)} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
+    <Card className={`w-full max-w-4xl mx-auto h-[600px] flex flex-col ${className || ''}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-5 w-5" />
@@ -124,7 +163,7 @@ export function ChatInterface() {
             disabled={isLoading}
             className="flex-1"
           />
-          <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+          <Button onClick={handleSend} disabled={!canSend}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
