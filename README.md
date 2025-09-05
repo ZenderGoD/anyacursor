@@ -18,7 +18,8 @@ A modern AI-powered chat assistant built with Next.js, Convex backend, AI SDK, a
 - **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
 - **Backend**: Convex (real-time database and functions)
 - **AI**: OpenAI GPT-4 via AI SDK
-- **UI Components**: Radix UI, Lucide React icons
+- **UI Components**: Radix UI, Lucide React icons, Magic UI, React Bits
+- **MCP Servers**: Magic UI MCP, React Bits MCP
 - **Styling**: Tailwind CSS with design system
 - **Deployment**: Vercel
 
@@ -50,7 +51,15 @@ A modern AI-powered chat assistant built with Next.js, Convex backend, AI SDK, a
    npx convex dev
    ```
 
-5. **Run the development server**
+5. **Set up MCP Servers (Optional)**
+   ```bash
+   # Install Magic UI MCP for your IDE
+   npx @magicuidesign/cli@latest install cursor  # or windsurf, claude, cline, roo-cline
+
+   # The React Bits MCP is pre-configured in mcp.json
+   ```
+
+6. **Run the development server**
    ```bash
    npm run dev
    ```
@@ -73,6 +82,22 @@ The project includes a comprehensive set of UI components:
 - **Input**: Form input components
 - **Card**: Container components for content
 - **Chat Interface**: Real-time chat component
+
+## 🤖 MCP Servers
+
+This project includes two MCP (Model Context Protocol) servers for enhanced AI-assisted development:
+
+### Magic UI MCP Server
+- **Installation**: `npx @magicuidesign/cli@latest install cursor`
+- **Usage**: Ask your IDE to generate Magic UI components like "Add a blur fade text animation"
+- **Components**: Grid backgrounds, marquee effects, morphing animations, and more
+
+### React Bits MCP Server
+- **Configuration**: Pre-configured in `mcp.json`
+- **Usage**: Generate animated React components and effects
+- **Components**: Particle effects, morphing loaders, hover animations, and interactive cards
+
+For detailed setup instructions, see [MCP_SETUP.md](./MCP_SETUP.md)
 
 ## 🚀 Deployment
 

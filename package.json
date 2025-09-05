@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "mcp:cursor": "npx @magicuidesign/cli@latest install cursor",
+    "mcp:windsurf": "npx @magicuidesign/cli@latest install windsurf",
+    "mcp:claude": "npx @magicuidesign/cli@latest install claude",
+    "mcp:cline": "npx @magicuidesign/cli@latest install cline",
+    "mcp:roo-cline": "npx @magicuidesign/cli@latest install roo-cline"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.24",
@@ -28,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@magicuidesign/mcp": "^1.0.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
