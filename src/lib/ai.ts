@@ -7,7 +7,6 @@ export async function generateAIResponse(prompt: string) {
   const { text } = await generateText({
     model,
     prompt,
-    maxTokens: 1000,
   });
 
   return text;

@@ -6,28 +6,9 @@ export const getMessages = query({
     conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
-      .unique();
-
-    if (!user) {
-      return [];
-    }
-
-    const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== user._id) {
-      return [];
-    }
-
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+      .filter((q) => q.eq(q.field("conversationId"), args.conversationId))
       .order("asc")
       .collect();
 
@@ -42,25 +23,6 @@ export const createMessage = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
-      .unique();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== user._id) {
-      throw new Error("Conversation not found");
-    }
-
     const messageId = await ctx.db.insert("messages", {
       conversationId: args.conversationId,
       role: args.role,

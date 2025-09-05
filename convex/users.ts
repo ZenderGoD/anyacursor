@@ -4,17 +4,13 @@ import { v } from "convex/values";
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
-      .unique();
-
-    return user;
+    // Return a demo user for now
+    return {
+      _id: "demo-user-id" as any,
+      name: "Demo User",
+      email: "demo@example.com",
+      createdAt: Date.now(),
+    };
   },
 });
 
@@ -25,20 +21,6 @@ export const createUser = mutation({
     image: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
-      .unique();
-
-    if (existingUser) {
-      return existingUser._id;
-    }
-
     const userId = await ctx.db.insert("users", {
       name: args.name,
       email: args.email,

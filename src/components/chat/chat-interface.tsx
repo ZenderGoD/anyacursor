@@ -77,15 +77,15 @@ export function ChatInterface() {
               }`}
             >
               {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary" />
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
               )}
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-800"
                 }`}
               >
                 <p className="text-sm">{message.content}</p>
@@ -94,22 +94,22 @@ export function ChatInterface() {
                 </p>
               </div>
               {message.role === "user" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                  <User className="h-4 w-4" />
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 </div>
               )}
             </div>
           ))}
           {isLoading && (
             <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-4 w-4 text-primary" />
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="bg-muted rounded-lg px-4 py-2">
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                  <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                 </div>
               </div>
             </div>
