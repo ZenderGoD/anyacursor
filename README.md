@@ -19,7 +19,7 @@ A modern AI-powered chat assistant built with Next.js, Convex backend, AI SDK, a
 - **Backend**: Convex (real-time database and functions)
 - **AI**: OpenAI GPT-4 via AI SDK
 - **UI Components**: Radix UI, Lucide React icons, Magic UI, React Bits
-- **MCP Servers**: Magic UI MCP, React Bits MCP
+- **MCP Servers**: Magic UI MCP, React Bits MCP, Convex MCP
 - **Styling**: Tailwind CSS with design system
 - **Deployment**: Vercel
 
@@ -85,7 +85,12 @@ The project includes a comprehensive set of UI components:
 
 ## 🤖 MCP Servers
 
-This project includes two MCP (Model Context Protocol) servers for enhanced AI-assisted development:
+This project includes three MCP (Model Context Protocol) servers for enhanced AI-assisted development:
+
+### Convex MCP Server
+- **Configuration**: Pre-configured in `mcp.json`
+- **Usage**: Database operations and schema management
+- **Features**: Create tables, add indexes, generate queries, update schemas
 
 ### Magic UI MCP Server
 - **Installation**: `npx @magicuidesign/cli@latest install cursor`

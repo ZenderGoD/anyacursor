@@ -1,6 +1,32 @@
 # MCP Server Setup Guide
 
-This project includes two MCP (Model Context Protocol) servers for enhanced AI-assisted development:
+This project includes three MCP (Model Context Protocol) servers for enhanced AI-assisted development:
+
+## 🗄️ Convex MCP Server
+
+Convex provides MCP support for database operations and schema management.
+
+### Configuration
+
+The Convex MCP server is pre-configured in `mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "convex": {
+      "command": "npx",
+      "args": ["-y", "convex", "mcp"]
+    }
+  }
+}
+```
+
+### Usage Examples
+
+- "Create a new table in the database"
+- "Add an index to the users table"
+- "Generate a query for user conversations"
+- "Update the schema with new fields"
 
 ## 🚀 Magic UI MCP Server
 
