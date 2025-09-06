@@ -19,8 +19,10 @@ OpenRouter provides a unified API that gives you access to hundreds of AI models
 The OpenRouter client is pre-configured in `src/lib/ai.ts`:
 
 ```typescript
+import OpenAI from "openai";
+
 // OpenRouter configuration - using OpenAI SDK with OpenRouter endpoint
-export const openRouterClient = openai("openai/gpt-4o", {
+export const openaiClient = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
 });
@@ -39,13 +41,38 @@ OpenRouter provides access to models from multiple providers:
 ### Usage Examples
 
 ```typescript
-import { generateAIResponse, generateImageWithOpenRouter } from '@/lib/ai';
+import { generateAIResponse, generateWithModel } from '@/lib/ai';
 
-// Text generation
+// Basic text generation with GPT-4
 const response = await generateAIResponse("Explain quantum computing");
 
-// Image generation (using DALL-E through OpenRouter)
-const image = await generateImageWithOpenRouter("A futuristic city skyline");
+// Advanced model selection
+const claudeResponse = await generateWithModel("Analyze this data", 'claude');
+const geminiResponse = await generateWithModel("Create a creative story", 'gemini');
+```
+
+### Direct OpenRouter API Usage
+
+```typescript
+import { openaiClient } from '@/lib/ai';
+
+// Custom API calls with OpenRouter
+const completion = await openaiClient.chat.completions.create({
+  model: "anthropic/claude-3-opus",
+  messages: [{ role: "user", content: "Hello!" }],
+  max_tokens: 1000,
+});
+```
+
+### Model Selection
+
+```typescript
+// Choose the right model for your use case
+const responses = await Promise.all([
+  generateWithModel("Code review this function", 'claude'),      // Best for coding
+  generateWithModel("Write a marketing email", 'gpt4'),         // Best for creative writing
+  generateWithModel("Analyze financial data", 'gemini'),        // Best for analysis
+]);
 ```
 
 ### Advanced Configuration

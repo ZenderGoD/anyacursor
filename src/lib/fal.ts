@@ -6,7 +6,7 @@ fal.config({
 });
 
 // Raj's Image Generation Patterns with Fal
-export async function generateImageWithFal(prompt: string) {
+export async function generateImageWithFal(prompt: string): Promise<FalResult> {
   try {
     const result = await fal.subscribe("fal-ai/flux/schnell", {
       input: {
@@ -24,7 +24,7 @@ export async function generateImageWithFal(prompt: string) {
       },
     });
 
-    return result;
+    return result as FalResult;
   } catch (error) {
     // Raj's Error Handling Pattern
     console.error('Fal Image Generation Error:', error);
@@ -33,11 +33,14 @@ export async function generateImageWithFal(prompt: string) {
 }
 
 // Raj's Advanced Image Generation with Fal
-export async function generateImageAdvanced(prompt: string, options?: {
-  style?: string;
-  aspectRatio?: string;
-  numImages?: number;
-}) {
+export async function generateImageAdvanced(
+  prompt: string,
+  options?: {
+    style?: string;
+    aspectRatio?: string;
+    numImages?: number;
+  }
+): Promise<FalResult> {
   try {
     const result = await fal.subscribe("fal-ai/flux-pro", {
       input: {
@@ -56,18 +59,32 @@ export async function generateImageAdvanced(prompt: string, options?: {
       },
     });
 
-    return result;
+    return result as FalResult;
   } catch (error) {
     console.error('Fal Advanced Image Generation Error:', error);
     throw new Error('Failed to generate advanced image with Fal');
   }
 }
 
+// Fal result types
+interface FalImage {
+  url: string;
+  width?: number;
+  height?: number;
+  content_type?: string;
+}
+
+interface FalResult {
+  data: {
+    images: FalImage[];
+  };
+}
+
 // Raj's Utility function for image URL extraction
-export function extractImageUrls(result: any): string[] {
+export function extractImageUrls(result: FalResult): string[] {
   if (!result?.data?.images) {
     return [];
   }
 
-  return result.data.images.map((image: any) => image.url);
+  return result.data.images.map((image: FalImage) => image.url);
 }

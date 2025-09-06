@@ -1,25 +1,24 @@
-import { openai } from "@ai-sdk/openai";
-import { generateText, generateImage } from "ai";
+import OpenAI from "openai";
 
 // OpenRouter configuration - using OpenAI SDK with OpenRouter endpoint
-export const openRouterClient = openai("openai/gpt-4o", {
+export const openaiClient = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 // Default model for text generation
-export const model = openRouterClient;
+export const model = "openai/gpt-4o";
 
 // Raj's AI Response Generation Pattern
 export async function generateAIResponse(prompt: string) {
   try {
-    const { text } = await generateText({
-      model,
-      prompt,
-      maxTokens: 1000,
+    const completion = await openaiClient.chat.completions.create({
+      model: "openai/gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
     });
 
-    return text;
+    return completion.choices[0]?.message?.content || "";
   } catch (error) {
     // Raj's Error Handling Pattern
     console.error('AI Response Generation Error:', error);
@@ -27,21 +26,24 @@ export async function generateAIResponse(prompt: string) {
   }
 }
 
-// Raj's Image Generation Pattern using OpenRouter
-export async function generateImageWithOpenRouter(prompt: string) {
+// Raj's Model Selection Pattern
+export async function generateWithModel(prompt: string, modelType: 'gpt4' | 'claude' | 'gemini' = 'gpt4') {
+  const modelMap = {
+    gpt4: "openai/gpt-4o",
+    claude: "anthropic/claude-3-haiku",
+    gemini: "google/gemini-pro",
+  };
+
   try {
-    const result = await generateImage({
-      model: openai("openai/dall-e-3", {
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: process.env.OPENROUTER_API_KEY,
-      }),
-      prompt,
-      size: "1024x1024",
+    const completion = await openaiClient.chat.completions.create({
+      model: modelMap[modelType],
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
     });
 
-    return result;
+    return completion.choices[0]?.message?.content || "";
   } catch (error) {
-    console.error('Image Generation Error:', error);
-    throw new Error('Failed to generate image');
+    console.error(`AI Response Generation Error (${modelType}):`, error);
+    throw new Error(`Failed to generate AI response with ${modelType}`);
   }
 }

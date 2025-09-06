@@ -128,12 +128,17 @@ This project uses multiple AI providers for enhanced capabilities:
 
 ```typescript
 // Text generation with OpenRouter
-import { generateAIResponse } from '@/lib/ai';
+import { generateAIResponse, generateWithModel } from '@/lib/ai';
 const response = await generateAIResponse("Hello, how are you?");
+const claudeResponse = await generateWithModel("Analyze this data", 'claude');
 
 // Image generation with Fal
-import { generateImageWithFal } from '@/lib/fal';
+import { generateImageWithFal, generateImageAdvanced } from '@/lib/fal';
 const image = await generateImageWithFal("A beautiful sunset over mountains");
+const advancedImage = await generateImageAdvanced("A cyberpunk city", {
+  style: "digital art",
+  numImages: 2
+});
 ```
 
 ## 🚀 Deployment
