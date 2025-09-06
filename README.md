@@ -17,7 +17,7 @@ A modern AI-powered chat assistant built with Next.js, Convex backend, AI SDK, a
 
 - **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
 - **Backend**: Convex (real-time database and functions)
-- **AI**: OpenAI GPT-4 via AI SDK
+- **AI**: OpenRouter (GPT-4, Claude, Gemini, etc.) + Fal for image generation
 - **UI Components**: Radix UI, Lucide React icons, Magic UI, React Bits
 - **MCP Servers**: Magic UI MCP, React Bits MCP, Convex MCP
 - **Styling**: Tailwind CSS with design system
@@ -44,7 +44,9 @@ A modern AI-powered chat assistant built with Next.js, Convex backend, AI SDK, a
    Fill in your environment variables:
    - `NEXT_PUBLIC_CONVEX_URL`: Your Convex deployment URL
    - `CONVEX_DEPLOYMENT`: Your Convex deployment name
-   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `OPENROUTER_API_KEY`: Your OpenRouter API key
+   - `FAL_KEY`: Your Fal API key (for image generation)
+   - `OPENAI_API_KEY`: Your OpenAI API key (optional, for direct access)
 
 4. **Set up Convex**
    ```bash
@@ -102,7 +104,37 @@ This project includes three MCP (Model Context Protocol) servers for enhanced AI
 - **Usage**: Generate animated React components and effects
 - **Components**: Particle effects, morphing loaders, hover animations, and interactive cards
 
-For detailed setup instructions, see [MCP_SETUP.md](./MCP_SETUP.md)
+For detailed setup instructions, see:
+- [MCP_SETUP.md](./MCP_SETUP.md) - MCP server configuration
+- [AI_SETUP.md](./AI_SETUP.md) - OpenRouter and Fal setup
+
+## 🤖 AI Providers
+
+This project uses multiple AI providers for enhanced capabilities:
+
+### OpenRouter (Primary AI Provider)
+- **Access**: Hundreds of AI models through a single API
+- **Models**: GPT-4, Claude, Gemini, and many more
+- **Features**: Automatic fallbacks and cost optimization
+- **Setup**: Get API key from [OpenRouter.ai](https://openrouter.ai)
+
+### Fal (Image Generation)
+- **Specialization**: High-quality image generation
+- **Models**: Flux Schnell, Flux Pro
+- **Features**: Fast generation, style control, batch processing
+- **Setup**: Get API key from [Fal.ai](https://fal.ai)
+
+### Usage Examples
+
+```typescript
+// Text generation with OpenRouter
+import { generateAIResponse } from '@/lib/ai';
+const response = await generateAIResponse("Hello, how are you?");
+
+// Image generation with Fal
+import { generateImageWithFal } from '@/lib/fal';
+const image = await generateImageWithFal("A beautiful sunset over mountains");
+```
 
 ## 🚀 Deployment
 
@@ -118,7 +150,9 @@ Make sure to set these in your Vercel dashboard:
 
 - `NEXT_PUBLIC_CONVEX_URL`
 - `CONVEX_DEPLOYMENT`
-- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `FAL_KEY`
+- `OPENAI_API_KEY` (optional)
 
 ## 📁 Project Structure
 
