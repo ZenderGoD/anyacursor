@@ -1,0 +1,81 @@
+---
+alwaysApply: true
+description: Raj's Error Handling & Defensive Programming Patterns
+---
+
+# Error Handling & Defensive Programming
+
+**Always assume things can go wrong and handle edge cases properly.**
+
+## ❌ Avoid - Fragile code without validation
+```typescript
+const getUser = async (userId: string) => {
+  return await db.get(userId);
+};
+```
+
+## ✅ Raj's Way - Defensive programming with validation
+```typescript
+const getUser = async (ctx: QueryCtx, userId: Id<'users'>) => {
+  const user = await ctx.db.get(userId);
+  if (!user) {
+    throw new ConvexError('USER_NOT_FOUND');
+  }
+  return user;
+};
+```
+
+## No Console Logs in Production:
+```typescript
+// ❌ Avoid - Console logs
+const processData = (data: unknown) => {
+  console.log('Processing data:', data);
+  // ... logic
+};
+
+// ✅ Raj's Way - Proper error handling
+const processData = (data: unknown) => {
+  try {
+    // ... logic
+  } catch (error) {
+    throw new ConvexError('PROCESSING_FAILED', { cause: error });
+  }
+};
+```
+
+## Error Classification:
+```typescript
+export const ERROR_TYPES = {
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  ACCESS_DENIED: 'ACCESS_DENIED',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
+  RATE_LIMIT: 'RATE_LIMIT',
+  INSUFFICIENT_CREDITS: 'INSUFFICIENT_CREDITS',
+} as const;
+```
+
+## Client-Side Error Handling:
+```typescript
+const handleError = (error: unknown) => {
+  if (error instanceof ConvexError) {
+    const errorData = error.data as {
+      type?: string;
+      field?: string;
+      message?: string;
+    };
+
+    switch (errorData?.type) {
+      case 'VALIDATION_ERROR':
+        if (errorData.field) {
+          form.setError(errorData.field, { message: errorData.message });
+        }
+        break;
+      case 'RATE_LIMIT':
+        setError('Too many requests. Please wait before trying again.');
+        break;
+      // Handle other error types...
+    }
+  }
+};
+```

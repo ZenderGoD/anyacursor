@@ -1,0 +1,161 @@
+---
+globs: src/**/*.tsx,src/**/*.ts
+description: Raj's React/Next.js Component and Frontend Patterns
+---
+
+# React/Next.js Frontend Patterns - Raj's Approach
+
+**Follow Raj's proven patterns for React components, hooks, and Next.js architecture.**
+
+## Component Structure Pattern:
+```typescript
+'use client';
+
+import { useState, useCallback, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+
+// Raj's Component Pattern
+interface Props {
+  // Required props first
+  product: Doc<'products'>;
+  selectedVersion: Doc<'versions'> | null;
+
+  // Optional props with defaults
+  className?: string;
+  isLoading?: boolean;
+
+  // Handlers grouped together
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+
+  // Complex objects last
+  assetsData?: AssetsData | null;
+}
+
+export function MyComponent({
+  product,
+  selectedVersion,
+  onSuccess,
+  className
+}: Props) {
+  // 1. Hooks first (in logical order)
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 2. Convex hooks
+  const updateProduct = useMutation(api.products.mutations.updateProduct);
+
+  // 3. Memoized values
+  const displayName = useMemo(() => {
+    return selectedVersion?.name || product.name;
+  }, [selectedVersion?.name, product.name]);
+
+  // 4. Callbacks
+  const handleUpdate = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await updateProduct({ id: product._id, name: 'New Name' });
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [updateProduct, product._id, onSuccess]);
+
+  // 5. Early returns for loading/error states
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  // 6. Main render
+  return (
+    <div className={cn('default-styles', className)}>
+      <h1>{displayName}</h1>
+      <button onClick={handleUpdate}>Update</button>
+    </div>
+  );
+}
+```
+
+## Import Organization:
+```typescript
+// 1. 'use client' directive first (if needed)
+'use client';
+
+// 2. External libraries (React, Next.js, etc.)
+import { useAuthActions } from '@convex-dev/auth/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from 'convex/react';
+import { ConvexError } from 'convex/values';
+import { useState } from 'react';
+
+// 3. Internal UI components (grouped by type)
+import { ButtonLoader } from '@/components/loaders';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+// 4. Convex API and types
+import { api } from '@/convex/_generated/api';
+import type { Id, Doc } from '@/convex/_generated/dataModel';
+
+// 5. Utilities last
+import { cn } from '@/lib/utils';
+```
+
+## Component Organization Hierarchy:
+```
+src/components/
+├── ui/                    # Reusable UI primitives
+├── product/              # Product-specific components
+│   ├── ProductDetails.tsx
+│   └── index.ts          # Clean exports
+├── chat/                 # AI chat system components
+├── organization/         # Organization management
+└── home/                 # Dashboard components
+```
+
+## Export Patterns:
+```typescript
+// In component file - named export
+export function ProductDetails({ product }: Props) {
+  // Implementation
+}
+
+// In index.ts files - clean imports
+export { ProductDetails } from './product-details';
+export { AssetModal } from './asset-modal';
+export type { ProductDetailsProps } from './product-details';
+```
+
+## Next.js App Router Patterns:
+```typescript
+interface PageProps {
+  params: { orgSlug: string; id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function ProductPage({ params, searchParams }: PageProps) {
+  // Use Convex hooks for data fetching
+  const product = useQuery(api.products.queries.getById, {
+    id: params.id as Id<'products'>
+  });
+
+  // Handle loading states
+  if (product === undefined) {
+    return <ProductPageSkeleton />;
+  }
+
+  if (product === null) {
+    return <div>Product not found</div>;
+  }
+
+  return <ProductDetails product={product} />;
+}
+```

@@ -1,173 +1,284 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, Bot, User } from "lucide-react";
+import { useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Send, Image, Edit, MessageSquare } from 'lucide-react';
 
-// Raj's Type Definitions
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
+// Raj's Chat Interface Component Pattern
+interface ChatInterfaceProps {
+  chatSlug?: string;
 }
 
-export interface ChatInterfaceProps {
-  className?: string;
-  onError?: (error: string) => void;
-}
-
-export function ChatInterface({ className, onError }: ChatInterfaceProps) {
-  // Raj's State Management Pattern
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: "Hello! I'm your AI assistant. How can I help you today?",
-      timestamp: new Date(),
-    },
-  ]);
-  const [input, setInput] = useState("");
+export default function ChatInterface({ chatSlug }: ChatInterfaceProps) {
+  const [generationMode, setGenerationMode] = useState<'text' | 'text-to-image' | 'image-to-image'>('text');
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [optimisticMessages, setOptimisticMessages] = useState<any[]>([]);
 
-  // Raj's Memoized Values
-  const canSend = useMemo(() => {
-    return input.trim().length > 0 && !isLoading;
-  }, [input, isLoading]);
+  const { messages, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+    }),
+  });
 
-  // Raj's Callback Pattern
-  const handleSend = useCallback(async () => {
-    if (!canSend) return;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date(),
+    const userMessage = {
+      id: `temp-${Date.now()}`,
+      role: 'user' as const,
+      parts: [{ type: 'text' as const, text: input }],
+      isOptimistic: true,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
+    // Optimistic UI update - add user message immediately
+    setOptimisticMessages(prev => [...prev, userMessage]);
+    setInput('');
     setIsLoading(true);
-    setError(null);
 
     try {
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Add mode context to the message
+      const messageWithMode = `${input}\n\n[Mode: ${generationMode}]`;
+      await sendMessage({ parts: [{ type: 'text', text: messageWithMode }] });
       
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `I received your message: "${userMessage.content}". This is a placeholder response. In a real implementation, this would call the AI SDK.`,
-        timestamp: new Date(),
-      };
-      
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
-      setError(errorMessage);
-      onError?.(errorMessage);
+      // Remove optimistic message once real message is received
+      setOptimisticMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
+    } catch (error) {
+      // Remove optimistic message on error
+      setOptimisticMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
+      console.error('Failed to send message:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [canSend, input, onError]);
+  };
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const getModeIcon = (mode: string) => {
+    switch (mode) {
+      case 'text':
+        return <MessageSquare className="h-4 w-4" />;
+      case 'text-to-image':
+        return <Image className="h-4 w-4" />;
+      case 'image-to-image':
+        return <Edit className="h-4 w-4" />;
+      default:
+        return <MessageSquare className="h-4 w-4" />;
     }
-  }, [handleSend]);
+  };
 
-  // Raj's Early Returns for Error States
-  if (error) {
-    return (
-      <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
-        <CardContent className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => setError(null)} variant="outline">
-              Try Again
-            </Button>
+  const getModeColor = (mode: string) => {
+    switch (mode) {
+      case 'text':
+        return 'bg-blue-100 text-blue-800';
+      case 'text-to-image':
+        return 'bg-green-100 text-green-800';
+      case 'image-to-image':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen max-w-4xl mx-auto">
+      {/* Header */}
+      <Card className="rounded-none border-b">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-6 w-6" />
+            AI Chat Interface
+            <Badge variant="secondary" className="ml-auto">
+              {messages.length} messages
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+
+      {/* Generation Mode Selector */}
+      <Card className="rounded-none border-b">
+        <CardContent className="pt-4">
+          <Tabs value={generationMode} onValueChange={(value) => setGenerationMode(value as any)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="text" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Text Chat
+              </TabsTrigger>
+              <TabsTrigger value="text-to-image" className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                Generate Image
+              </TabsTrigger>
+              <TabsTrigger value="image-to-image" className="flex items-center gap-2">
+                <Edit className="h-4 w-4" />
+                Edit Image
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Messages Area */}
+      <Card className="flex-1 rounded-none border-b overflow-hidden">
+        <CardContent className="h-full p-0">
+          <div className="h-full overflow-y-auto p-4 space-y-4">
+            {messages.length === 0 && optimisticMessages.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <div className="text-center">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Start a conversation</h3>
+                  <p className="text-sm">
+                    Choose a mode above and start chatting with AI
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {messages.map((message) => (
+                  <MessageBubble key={message.id} message={message} />
+                ))}
+                {optimisticMessages.map((message) => (
+                  <MessageBubble key={message.id} message={message} isOptimistic />
+                ))}
+              </>
+            )}
+            {isLoading && (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>AI is thinking...</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
-    );
-  }
 
+      {/* Input Area */}
+      <Card className="rounded-none">
+        <CardContent className="pt-4">
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={
+                  generationMode === 'text'
+                    ? 'Ask me anything...'
+                    : generationMode === 'text-to-image'
+                    ? 'Describe the image you want to generate...'
+                    : 'Describe how you want to edit the image...'
+                }
+                disabled={isLoading}
+                className="w-full"
+              />
+            </div>
+            <Button type="submit" disabled={!input.trim() || isLoading}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge className={getModeColor(generationMode)}>
+              {getModeIcon(generationMode)}
+              <span className="ml-1 capitalize">{generationMode.replace('-', ' ')}</span>
+            </Badge>
+            <span className="text-xs text-gray-500">
+              {generationMode === 'text' && 'Powered by OpenRouter'}
+              {generationMode === 'text-to-image' && 'Powered by FAL AI Flux Pro'}
+              {generationMode === 'image-to-image' && 'Powered by FAL AI Gemini 2.5 Flash'}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Raj's Message Bubble Component
+function MessageBubble({ message, isOptimistic = false }: { message: any; isOptimistic?: boolean }) {
+  const isUser = message.role === 'user';
+  
   return (
-    <Card className={`w-full max-w-4xl mx-auto h-[600px] flex flex-col ${className || ''}`}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5" />
-          AI Chat Assistant
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`max-w-[80%] rounded-lg px-4 py-2 ${
+          isUser
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-100 text-gray-900'
+        } ${isOptimistic ? 'opacity-70' : ''}`}
+      >
+        <div className="text-sm">
+          {message.parts.map((part: any, index: number) => {
+            if (part.type === 'text') {
+              return (
+                <div key={index} className="whitespace-pre-wrap">
+                  {part.text}
                 </div>
-              )}
-              <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.role === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 dark:bg-gray-800"
-                }`}
-              >
-                <p className="text-sm">{message.content}</p>
-                <p className="text-xs opacity-70 mt-1">
-                  {message.timestamp.toLocaleTimeString()}
-                </p>
-              </div>
-              {message.role === "user" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                </div>
-              )}
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                  <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                </div>
-              </div>
-            </div>
-          )}
+              );
+            }
+            if (part.type === 'tool-generateImage') {
+              const { state, toolCallId } = part;
+              if (state === 'input-available') {
+                return (
+                  <div key={toolCallId} className="text-blue-600">
+                    Generating image...
+                  </div>
+                );
+              }
+              if (state === 'output-available') {
+                const { output } = part;
+                return (
+                  <div key={toolCallId} className="mt-2">
+                    {output.images?.map((image: any, imgIndex: number) => (
+                      <img
+                        key={imgIndex}
+                        src={image.url}
+                        alt="Generated image"
+                        className="max-w-full h-auto rounded-lg"
+                      />
+                    ))}
+                  </div>
+                );
+              }
+            }
+            if (part.type === 'tool-editImage') {
+              const { state, toolCallId } = part;
+              if (state === 'input-available') {
+                return (
+                  <div key={toolCallId} className="text-purple-600">
+                    Editing image...
+                  </div>
+                );
+              }
+              if (state === 'output-available') {
+                const { output } = part;
+                return (
+                  <div key={toolCallId} className="mt-2">
+                    {output.images?.map((image: any, imgIndex: number) => (
+                      <img
+                        key={imgIndex}
+                        src={image.url}
+                        alt="Edited image"
+                        className="max-w-full h-auto rounded-lg"
+                      />
+                    ))}
+                    {output.description && (
+                      <p className="text-sm text-gray-600 mt-2">{output.description}</p>
+                    )}
+                  </div>
+                );
+              }
+            }
+            return null;
+          })}
         </div>
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button onClick={handleSend} disabled={!canSend}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

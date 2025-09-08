@@ -1,0 +1,184 @@
+---
+globs: convex/**/ai/**,src/lib/ai.ts
+description: Raj's AI Integration Patterns for Cursor Generation
+---
+
+# AI Integration Patterns - Raj's Approach
+
+**Follow Raj's proven patterns for AI agent implementation, tool calling, and response handling.**
+
+## AI Agent Structure:
+```typescript
+export const cursorAgent = new Agent({
+  name: 'Cursor Generation Agent',
+  languageModel: openrouter.chat('gpt-5-mini:nitro', {
+    parallelToolCalls: true,
+  }),
+  instructions: `
+You are a specialized AI for generating custom cursor designs...
+
+OUTPUT POLICY:
+- Do the work using tools; then reply with one short sentence (max 20 words).
+- Use markdown supported by Streamdown: short lists, tables, or code only when essential.
+- No preambles, no meta commentary. Default to a single line like: Completed.
+
+REDACTION AND PRIVACY:
+- Never reveal IDs of any kind (cursorId, versionId, variantId, etc.).
+- If a tool returns IDs, omit them or replace with human labels.
+- Avoid exposing internal paths, database schema details, or function names.
+`,
+  tools: {
+    generateCursorVariant,
+    // Additional tools
+  },
+});
+```
+
+## AI Tool Implementation:
+```typescript
+export const generateCursorVariant = tool({
+  args: {
+    versionId: v.id('versions'),
+    prompt: v.string(),
+    model: v.optional(v.union(
+      v.literal('gemini-image-edit'),
+      v.literal('gpt-image-1'),
+      v.literal('gpt-5-mini')
+    )),
+  },
+  handler: async (ctx, args) => {
+    // 1. Authentication check first
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError('UNAUTHORIZED');
+    }
+
+    // 2. Validate permissions and credits
+    const user = await ctx.db.get(userId);
+    const creditsRequired = 5;
+
+    if (user && user.credits < creditsRequired) {
+      throw new ConvexError('INSUFFICIENT_CREDITS');
+    }
+
+    // 3. Create variant record
+    const variantId = await ctx.db.insert('variants', {
+      versionId: args.versionId,
+      name: `variant_${Date.now()}`,
+      prompt: args.prompt,
+      status: 'pending',
+    });
+
+    // 4. Schedule async generation
+    await ctx.scheduler.runAfter(0, internal.cursors.ai.node.generateCursorImage, {
+      variantId,
+      prompt: args.prompt,
+      model: args.model || 'gpt-image-1',
+    });
+
+    return { variantId, status: 'pending' };
+  },
+});
+```
+
+## AI Processing Actions:
+```typescript
+export const generateCursorImage = internalAction({
+  args: {
+    variantId: v.id('variants'),
+    prompt: v.string(),
+    model: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const startTime = Date.now();
+
+    try {
+      // Update status to processing
+      await ctx.runMutation(internal.cursors.mutations.updateVariantStatus, {
+        variantId: args.variantId,
+        status: 'processing',
+      });
+
+      // Generate image using appropriate AI model
+      const result = await generateImage({
+        model: args.model,
+        prompt: args.prompt,
+        size: '32x32',
+        format: 'png',
+      });
+
+      // Store in Convex storage
+      const storageId = await ctx.storage.store(result.uint8Array);
+
+      // Update variant record
+      await ctx.runMutation(internal.cursors.mutations.updateVariantStatus, {
+        variantId: args.variantId,
+        status: 'completed',
+        storageId,
+        processingTimeMs: Date.now() - startTime,
+      });
+
+    } catch (error) {
+      // Handle errors and update status
+      await ctx.runMutation(internal.cursors.mutations.updateVariantStatus, {
+        variantId: args.variantId,
+        status: 'failed',
+        processingTimeMs: Date.now() - startTime,
+        errorMessage: error instanceof Error ? error.message : 'Generation failed',
+      });
+      throw error;
+    }
+  },
+});
+```
+
+## AI Response Rendering:
+```typescript
+export const Response = memo(
+  ({
+    className,
+    options,
+    children,
+    parseIncompleteMarkdown: shouldParseIncompleteMarkdown = true,
+    ...props
+  }: ResponseProps) => {
+    // Parse incomplete markdown for streaming
+    const parsedChildren = shouldParseIncompleteMarkdown
+      ? parseIncompleteMarkdown(children)
+      : children;
+
+    return (
+      <div className={cn('size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0', className)}>
+        <HardenedMarkdown
+          allowedImagePrefixes={['*']}
+          allowedLinkPrefixes={['*']}
+          rehypePlugins={[rehypeKatex]}
+          remarkPlugins={[remarkGfm, remarkMath]}
+        >
+          {parsedChildren}
+        </HardenedMarkdown>
+      </div>
+    );
+  },
+  (prevProps, nextProps) => prevProps.children === nextProps.children
+);
+```
+
+## Tool Call UI Components:
+```typescript
+export function GenerateAssetToolCall({ tool }: ToolComponentProps) {
+  if (tool.type !== 'tool-generateNewAsset') return null;
+
+  return (
+    <div className="border rounded-lg p-4 bg-purple-50">
+      <div className="flex items-center gap-2 mb-2">
+        <Wand2 className="h-4 w-4 animate-pulse text-purple-600" />
+        <span className="font-medium text-purple-900">
+          Generating new asset
+        </span>
+      </div>
+      <p className="text-sm text-purple-700">{tool.args.prompt}</p>
+    </div>
+  );
+}
+```

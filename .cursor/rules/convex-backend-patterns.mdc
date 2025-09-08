@@ -1,0 +1,121 @@
+---
+globs: convex/**/*
+description: Raj's Convex Backend Architecture Patterns
+---
+
+# Convex Backend Architecture - Raj's Patterns
+
+**Follow Raj's proven patterns for Convex functions, queries, and mutations.**
+
+## Function Structure Pattern:
+```typescript
+export const createProduct = mutation({
+  args: {
+    // Always use proper validators
+    name: v.string(),
+    description: v.optional(v.string()),
+    visibility: v.union(
+      v.literal('private'),
+      v.literal('public'),
+      v.literal('unlisted')
+    ),
+  },
+  returns: v.id('products'), // Always specify return type
+  handler: async (ctx, args) => {
+    // 1. Authentication check first
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError('UNAUTHORIZED');
+    }
+
+    // 2. Permission validation
+    // 3. Business logic
+    const productId = await ctx.db.insert('products', {
+      name: args.name,
+      ownerId: userId,
+      visibility: args.visibility,
+      // No manual timestamps - Convex handles this
+    });
+
+    return productId;
+  },
+});
+```
+
+## Query Optimization Patterns:
+```typescript
+export const getProductsByOrg = query({
+  args: { orgSlug: v.string() },
+  returns: v.array(v.object({
+    _id: v.id('products'),
+    name: v.string(),
+    _creationTime: v.number(),
+  })),
+  handler: async (ctx, args) => {
+    // Always check auth first
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    // Use proper indexes for efficient queries
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_slug', (q) => q.eq('slug', args.orgSlug))
+      .first();
+
+    if (!org) return [];
+
+    // Verify permissions before data access
+    const membership = await ctx.db
+      .query('members')
+      .withIndex('by_org_user', (q) =>
+        q.eq('organizationId', org._id).eq('userId', userId)
+      )
+      .first();
+
+    if (!membership) return [];
+
+    // Efficient query with proper ordering and limits
+    return await ctx.db
+      .query('products')
+      .withIndex('by_organization', (q) => q.eq('organizationId', org._id))
+      .order('desc')
+      .take(50); // Always limit results
+  },
+});
+```
+
+## File Organization:
+```
+convex/
+├── _generated/           # Auto-generated API types
+├── schema.ts            # Database schema definition
+├── auth.ts              # Authentication logic
+├── products/            # Feature-based organization
+│   ├── mutations.ts     # Product CRUD operations
+│   ├── queries.ts       # Product data retrieval
+│   └── ai/              # AI integration
+│       ├── agents/      # AI agent definitions
+│       └── tools/       # AI tool implementations
+└── organizations/       # Organization management
+```
+
+## Schema Design Principles:
+```typescript
+const schema = defineSchema({
+  products: defineTable({
+    name: v.string(),
+    visibility: v.union(
+      v.literal('private'),
+      v.literal('public'),
+      v.literal('unlisted')
+    ),
+    // No manual timestamps - Convex provides _creationTime
+  })
+    .index('by_user', ['userId'])
+    .index('by_visibility', ['visibility'])
+    .searchIndex('search_products', {
+      searchField: 'name',
+      filterFields: ['userId'],
+    }),
+});
+```

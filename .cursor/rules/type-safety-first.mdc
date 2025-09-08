@@ -1,0 +1,54 @@
+---
+alwaysApply: true
+description: Raj's Type Safety First - Never use any types, always define proper interfaces
+---
+
+# Type Safety First - Raj's Core Philosophy
+
+**Never use `any` types. Always define proper interfaces and use Convex validators.**
+
+## ❌ Avoid - Using any or loose types
+```typescript
+const handleData = (data: any) => {
+  return data.someProperty;
+};
+```
+
+## ✅ Raj's Way - Strict typing with proper interfaces
+```typescript
+interface UserData {
+  id: Id<'users'>;
+  name: string;
+  email: string;
+}
+
+const handleUserData = (data: UserData): string => {
+  return data.name;
+};
+```
+
+## Key Principles:
+- **Discriminated Unions**: Use for status types and enums
+- **Generic Constraints**: For reusable validation functions
+- **Strict Mode**: Always enable strict TypeScript settings
+- **Interface Segregation**: Small, focused interfaces over large ones
+- **Type Guards**: Use `typeof` and `instanceof` for runtime type checking
+
+## Convex Validators:
+```typescript
+// Always use proper validators
+export const createProduct = mutation({
+  args: {
+    name: v.string(),
+    visibility: v.union(
+      v.literal('private'),
+      v.literal('public'),
+      v.literal('unlisted')
+    ),
+  },
+  returns: v.id('products'),
+  handler: async (ctx, args) => {
+    // Implementation
+  },
+});
+```

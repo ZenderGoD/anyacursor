@@ -1,63 +1,77 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
+import { getAuthUserId } from "./auth";
 
-// Raj's Error Types
-export const ERROR_TYPES = {
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  CONVERSATION_NOT_FOUND: 'CONVERSATION_NOT_FOUND',
-  ACCESS_DENIED: 'ACCESS_DENIED',
-} as const;
+// Raj's Conversation Functions
+export const sendMessage = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    role: v.union(v.literal('user'), v.literal('assistant')),
+    content: v.string(),
+    toolCalls: v.optional(v.array(v.object({
+      toolName: v.string(),
+      args: v.any(),
+      result: v.optional(v.any()),
+    }))),
+  },
+  handler: async (ctx: any, args: any) => {
+    // 1. Authentication check
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError('UNAUTHORIZED');
+    }
 
-// Raj's Input Validation
-function sanitizeInput(input: string): string {
-  return input
-    .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML
-    .substring(0, 1000); // Limit length
-}
+    // 2. Verify conversation ownership
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) {
+      throw new ConvexError('CONVERSATION_NOT_FOUND');
+    }
 
-export const getConversations = query({
-  args: {},
-  returns: v.array(v.object({
-    _id: v.id('conversations'),
-    userId: v.id('users'),
-    title: v.string(),
-    _creationTime: v.number(),
-  })),
-  handler: async (ctx) => {
-    // For demo purposes, return all conversations
-    // In production, this would filter by authenticated user
-    const conversations = await ctx.db
-      .query("conversations")
-      .order("desc")
-      .take(50); // Always limit results
+    if (conversation.userId !== userId) {
+      throw new ConvexError('ACCESS_DENIED');
+    }
 
-    return conversations;
+    // 3. Save message
+    await ctx.db.insert('messages', {
+      conversationId: args.conversationId,
+      role: args.role,
+      content: args.content,
+      toolCalls: args.toolCalls,
+    });
   },
 });
 
 export const createConversation = mutation({
   args: {
     title: v.string(),
+    cursorId: v.optional(v.id('cursors')),
   },
   returns: v.id('conversations'),
-  handler: async (ctx, args) => {
-    // 1. Validate inputs
-    const sanitizedTitle = sanitizeInput(args.title);
-    if (sanitizedTitle.length < 1) {
-      throw new ConvexError('Title is required');
+  handler: async (ctx: any, args: any) => {
+    // 1. Authentication check
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError('UNAUTHORIZED');
     }
 
-    if (sanitizedTitle.length > 200) {
-      throw new ConvexError('Title is too long (max 200 characters)');
+    // 2. If cursorId provided, verify ownership
+    if (args.cursorId) {
+      const cursor = await ctx.db.get(args.cursorId);
+      if (!cursor) {
+        throw new ConvexError('CURSOR_NOT_FOUND');
+      }
+
+      if (cursor.userId !== userId) {
+        throw new ConvexError('ACCESS_DENIED');
+      }
     }
 
-    // 2. Create conversation (Convex handles _creationTime automatically)
-    const conversationId = await ctx.db.insert("conversations", {
-      userId: "demo-user-id" as any, // Temporary for demo
-      title: sanitizedTitle,
+    // 3. Create conversation
+    const conversationId = await ctx.db.insert('conversations', {
+      userId,
+      title: args.title,
+      cursorId: args.cursorId,
     });
 
     return conversationId;
@@ -65,27 +79,44 @@ export const createConversation = mutation({
 });
 
 export const getConversation = query({
-  args: {
-    conversationId: v.id("conversations"),
-  },
-  returns: v.union(
-    v.object({
-      _id: v.id('conversations'),
-      userId: v.id('users'),
-      title: v.string(),
-      _creationTime: v.number(),
-    }),
-    v.null()
-  ),
-  handler: async (ctx, args) => {
-    const conversation = await ctx.db.get(args.conversationId);
-    
-    if (!conversation) {
-      return null;
-    }
+  args: { conversationId: v.id('conversations') },
+  handler: async (ctx: any, args: any) => {
+    // 1. Authentication check
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
 
-    // In production, check if user has access to this conversation
-    // For demo, return the conversation
+    // 2. Get conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return null;
+
+    // 3. Check permissions
+    if (conversation.userId !== userId) return null;
+
     return conversation;
+  },
+});
+
+export const getConversationMessages = query({
+  args: {
+    conversationId: v.id('conversations'),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx: any, args: any) => {
+    // 1. Authentication check
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    // 2. Get conversation and verify access
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return [];
+
+    if (conversation.userId !== userId) return [];
+
+    // 3. Get messages
+    return await ctx.db
+      .query('messages')
+      .withIndex('by_conversation', (q: any) => q.eq('conversationId', args.conversationId))
+      .order('desc')
+      .take(args.limit || 50);
   },
 });

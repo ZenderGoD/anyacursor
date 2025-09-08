@@ -1,0 +1,171 @@
+---
+alwaysApply: true
+description: Raj's Performance & Optimization Patterns
+---
+
+# Performance & Optimization - Raj's Approach
+
+**Follow Raj's performance-first approach with proper memoization, query optimization, and efficient rendering.**
+
+## React Performance Patterns:
+```typescript
+import { memo, useMemo, useCallback } from 'react';
+
+// Memoize expensive computations
+const ExpensiveComponent = memo(({ data }: Props) => {
+  const processedData = useMemo(() => {
+    return data.map(item => ({
+      ...item,
+      computed: expensiveCalculation(item),
+    }));
+  }, [data]);
+
+  const handleClick = useCallback((id: string) => {
+    // Handler logic
+  }, []); // Only recreate if dependencies change
+
+  return <div>{/* Render */}</div>;
+});
+
+// Proper dependency arrays
+useEffect(() => {
+  // Effect logic
+}, [dependency1, dependency2]); // Include ALL dependencies
+```
+
+## Database Query Optimization:
+```typescript
+export const getProductsWithAssets = query({
+  args: { orgId: v.id('organizations') },
+  handler: async (ctx, args) => {
+    // Use indexes for efficient queries
+    const products = await ctx.db
+      .query('products')
+      .withIndex('by_organization', (q) => q.eq('organizationId', args.orgId))
+      .order('desc')
+      .take(50); // Always limit results
+
+    // Avoid N+1 queries - batch related data
+    const productIds = products.map(p => p._id);
+    const allAssets = await Promise.all(
+      productIds.map(id =>
+        ctx.db
+          .query('assets')
+          .withIndex('by_product', (q) => q.eq('productId', id))
+          .take(10)
+          .collect()
+      )
+    );
+
+    // Combine results efficiently
+    return products.map((product, index) => ({
+      ...product,
+      assets: allAssets[index] || [],
+    }));
+  },
+});
+```
+
+## Image and Asset Optimization:
+```typescript
+import Image from 'next/image';
+
+// Use Next.js Image component for optimization
+export function AssetDisplay({ asset }: { asset: Doc<'assets'> }) {
+  const imageUrl = useStorageUrl(asset.storageId);
+
+  if (!imageUrl) {
+    return <AssetSkeleton />;
+  }
+
+  return (
+    <Image
+      src={imageUrl}
+      alt={asset.prompt || 'Generated asset'}
+      width={asset.metadata.width || 512}
+      height={asset.metadata.height || 512}
+      className="rounded-lg"
+      priority={false} // Only true for above-the-fold images
+    />
+  );
+}
+```
+
+## Convex Storage Optimization:
+```typescript
+// Generate optimized URLs
+export function useStorageUrl(storageId: string | null) {
+  return useQuery(
+    storageId ? api.storage.getUrl : api.storage.getUrl, // This is wrong, but shows the pattern
+    storageId ? { storageId } : 'skip'
+  );
+}
+
+// Batch storage operations when possible
+const storageIds = variants.map(v => v.storageId);
+const urls = await Promise.all(
+  storageIds.map(id => ctx.storage.getUrl(id))
+);
+```
+
+## Component Memoization:
+```typescript
+// Use React.memo for expensive components
+const AssetGrid = memo(function AssetGrid({ assets, onSelect }: Props) {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {assets.map(asset => (
+        <AssetCard
+          key={asset._id}
+          asset={asset}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
+  );
+});
+
+// Custom comparison function for complex props
+AssetGrid.displayName = 'AssetGrid';
+```
+
+## Query Result Limits:
+```typescript
+// Always limit query results
+export const getRecentProducts = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('products')
+      .order('desc')
+      .take(args.limit || 20); // Default limit
+  },
+});
+```
+
+## Lazy Loading Patterns:
+```typescript
+// Lazy load heavy components
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+// Use Suspense boundaries
+<Suspense fallback={<LoadingSpinner />}>
+  <HeavyComponent />
+</Suspense>
+
+// Lazy load data
+const [data, setData] = useState(null);
+const [loading, setLoading] = useState(false);
+
+const loadData = useCallback(async () => {
+  if (data) return; // Already loaded
+
+  setLoading(true);
+  try {
+    const result = await fetchData();
+    setData(result);
+  } finally {
+    setLoading(false);
+  }
+}, [data]);
+```

@@ -1,0 +1,154 @@
+---
+alwaysApply: true
+description: Raj's Code Organization & Structure Patterns
+---
+
+# Code Organization & Structure - Raj's Architecture
+
+**Follow Raj's modular architecture patterns for scalable, maintainable codebases.**
+
+## File Naming Conventions:
+```
+Raj's Naming Patterns:
+- Components: PascalCase files, kebab-case directories
+  - src/components/product-page/ProductDetails.tsx
+  - src/components/ui/button.tsx
+
+- Convex functions: kebab-case files and directories
+  - convex/products/mutations.ts
+  - convex/organizations/queries.ts
+
+- Utilities: kebab-case
+  - src/lib/utils.ts
+  - src/hooks/use-storage-url.ts
+
+- Pages: kebab-case with Next.js conventions
+  - src/app/[orgSlug]/products/[id]/page.tsx
+```
+
+## Component Export Patterns:
+```typescript
+// In component file - named export
+export function ProductDetails({ product }: Props) {
+  // Component implementation
+}
+
+// In index.ts files - clean imports
+export { ProductDetails } from './product-details';
+export { AssetModal } from './asset-modal';
+export type { ProductDetailsProps } from './product-details';
+
+// Usage - Clean imports
+import { ProductDetails, AssetModal } from '@/components/product-page';
+```
+
+## Feature-Based Organization:
+```typescript
+// ✅ Good - Group related components by feature
+src/components/
+├── product/
+│   ├── ProductDetails.tsx
+│   ├── ProductActions.tsx
+│   ├── index.ts
+├── chat/
+│   ├── ChatInterface.tsx
+│   ├── MessageList.tsx
+│   ├── index.ts
+
+// ❌ Bad - Don't organize by type
+src/components/
+├── buttons/
+├── modals/
+├── forms/
+```
+
+## Convex Function Organization:
+```typescript
+// Group related functions in modules
+convex/products/mutations.ts
+export const create = mutation({ /* ... */ });
+export const update = mutation({ /* ... */ });
+export const delete = mutation({ /* ... */ });
+
+convex/products/queries.ts
+export const getById = query({ /* ... */ });
+export const listByOrg = query({ /* ... */ });
+export const search = query({ /* ... */ });
+
+convex/products/internal.ts
+export const createInternal = internalMutation({ /* ... */ });
+export const updateInternal = internalMutation({ /* ... */ });
+```
+
+## Barrel Exports:
+```typescript
+// convex/products/index.ts
+export * from './mutations';
+export * from './queries';
+export * from './ai/agents';
+export * from './ai/tools';
+
+// Usage
+import { createProduct, getProductById } from '@/convex/products';
+```
+
+## Utility Organization:
+```typescript
+// src/lib/
+├── utils.ts           # General utilities
+├── ai.ts             # AI-specific utilities
+├── constants.ts      # App constants
+├── validation.ts     # Validation helpers
+└── types.ts          # Shared type definitions
+```
+
+## Hook Organization:
+```typescript
+// src/hooks/
+├── use-auth.ts       # Authentication hooks
+├── use-storage-url.ts # Storage URL hooks
+├── use-debounce.ts   # Debounce hooks
+└── use-local-storage.ts # Local storage hooks
+```
+
+## Test Organization:
+```typescript
+// Follow the same structure as source code
+__tests__/
+├── components/
+│   ├── ui/
+│   └── product/
+├── convex/
+│   ├── products/
+│   └── organizations/
+└── lib/
+```
+
+## Configuration Files:
+```typescript
+// Root level configuration
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── eslint.config.mjs
+└── postcss.config.mjs
+
+// Convex configuration
+convex/
+├── schema.ts
+├── auth.config.js
+└── tsconfig.json
+```
+
+## Environment Variables:
+```typescript
+// .env.local
+NEXT_PUBLIC_CONVEX_URL=your_convex_url
+OPENROUTER_API_KEY=your_openrouter_key
+STRIPE_PUBLISHABLE_KEY=your_stripe_key
+
+// .env.example (for documentation)
+NEXT_PUBLIC_CONVEX_URL=
+OPENROUTER_API_KEY=
+STRIPE_PUBLISHABLE_KEY=
+```

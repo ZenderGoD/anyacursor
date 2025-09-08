@@ -1,0 +1,114 @@
+{
+  "mcpServers": {
+    "convex": {
+      "command": "npx",
+      "args": ["@convex-dev/mcp-server"],
+      "env": {
+        "CONVEX_DEPLOYMENT": "your-convex-deployment",
+        "CONVEX_AUTH_KEY": "your-convex-auth-key"
+      },
+      "capabilities": [
+        "database_operations",
+        "real_time_subscriptions",
+        "schema_management",
+        "function_execution"
+      ]
+    },
+    "magicui": {
+      "command": "npx",
+      "args": ["@magicui/mcp-server"],
+      "env": {
+        "MAGICUI_API_KEY": "your-magicui-api-key"
+      },
+      "capabilities": [
+        "component_access",
+        "animation_library",
+        "effect_library",
+        "design_patterns"
+      ]
+    },
+    "reactbits": {
+      "command": "npx",
+      "args": ["@reactbits/mcp-server"],
+      "env": {
+        "REACTBITS_API_KEY": "your-reactbits-api-key"
+      },
+      "capabilities": [
+        "pattern_library",
+        "hook_collection",
+        "utility_functions",
+        "best_practices"
+      ]
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["@slack/mcp-server"],
+      "env": {
+        "SLACK_BOT_TOKEN": "xoxb-your-slack-bot-token",
+        "SLACK_APP_TOKEN": "xapp-your-slack-app-token",
+        "SLACK_SIGNING_SECRET": "your-slack-signing-secret"
+      },
+      "capabilities": [
+        "message_sending",
+        "channel_management",
+        "user_notifications",
+        "real_time_events"
+      ]
+    }
+  },
+  "agentConfig": {
+    "name": "Enhanced Spec Kit Agent",
+    "model": "google/gemini-2.5-flash-lite",
+    "maxTokens": 8192,
+    "temperature": 0.7,
+    "parallelToolCalls": true,
+    "mcpIntegration": {
+      "enabled": true,
+      "timeout": 30000,
+      "retryAttempts": 3,
+      "healthCheckInterval": 60000
+    }
+  },
+  "communicationFlow": {
+    "userInput": {
+      "source": "slack",
+      "channel": "#anyacursor-dev",
+      "botName": "SpecKitBot"
+    },
+    "taskCoordination": {
+      "assistant": "AI Assistant",
+      "protocol": "mcp_coordination",
+      "timeout": 300000
+    },
+    "progressUpdates": {
+      "frequency": "real_time",
+      "channels": ["#anyacursor-dev", "#anyacursor-progress"],
+      "format": "markdown"
+    },
+    "completionReports": {
+      "includeFiles": true,
+      "includeMetrics": true,
+      "includeNextSteps": true
+    }
+  },
+  "workflow": {
+    "specification": {
+      "template": "enhanced-cursor-spec-template.md",
+      "includeMCPData": true,
+      "includeUIComponents": true,
+      "includeReactPatterns": true
+    },
+    "technicalPlan": {
+      "template": "ai-sdk-cursor-plan-template.md",
+      "includeMCPIntegration": true,
+      "includeConvexInsights": true,
+      "includePerformanceMetrics": true
+    },
+    "taskBreakdown": {
+      "template": "ai-sdk-cursor-tasks-template.md",
+      "includeMCPTasks": true,
+      "includeTestingTasks": true,
+      "includeOptimizationTasks": true
+    }
+  }
+}

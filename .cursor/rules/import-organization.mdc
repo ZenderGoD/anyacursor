@@ -1,0 +1,73 @@
+---
+globs: *.ts,*.tsx
+description: Raj's Import Organization Patterns
+---
+
+# Import Organization - Raj's Strict Order
+
+**Follow Raj's precise import ordering for clean, maintainable code.**
+
+## ✅ Raj's Import Order:
+```typescript
+// 1. 'use client' directive first (if needed)
+'use client';
+
+// 2. External libraries (React, Next.js, etc.)
+import { useAuthActions } from '@convex-dev/auth/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from 'convex/react';
+import { ConvexError } from 'convex/values';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+// 3. Internal UI components (grouped by type)
+import { ButtonLoader } from '@/components/loaders';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+// 4. Convex API and types
+import { api } from '@/convex/_generated/api';
+import type { Id, Doc } from '@/convex/_generated/dataModel';
+
+// 5. Utilities last
+import { cn } from '@/lib/utils';
+```
+
+## Key Principles:
+- **'use client' directive always first** (for client components)
+- **External libraries second** (React, Next.js, Convex, etc.)
+- **Internal components third** (UI components grouped by type)
+- **Convex API and types fourth** (api, Id, Doc types)
+- **Utilities last** (cn, formatters, etc.)
+
+## Grouping Examples:
+```typescript
+// ✅ Good - Group related imports
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+
+// ❌ Bad - Don't mix import types
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useMutation } from 'convex/react';
+import { Input } from '@/components/ui/input';
+```
+
+## Import Sorting:
+```typescript
+// ✅ Good - Alphabetical within groups
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+
+// ✅ Also good - Multi-line for clarity
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+```

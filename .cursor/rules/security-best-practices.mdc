@@ -1,0 +1,143 @@
+---
+alwaysApply: true
+description: Raj's Security & Best Practices
+---
+
+# Security & Best Practices - Raj's Approach
+
+**Follow Raj's security-first approach with proper authentication, authorization, and input validation.**
+
+## Authentication & Authorization Pattern:
+```typescript
+export const secureOperation = mutation({
+  args: { resourceId: v.id('products') },
+  handler: async (ctx, args) => {
+    // 1. Always check authentication first
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError('UNAUTHORIZED');
+    }
+
+    // 2. Get the resource
+    const resource = await ctx.db.get(args.resourceId);
+    if (!resource) {
+      throw new ConvexError('RESOURCE_NOT_FOUND');
+    }
+
+    // 3. Check permissions based on ownership model
+    if (resource.organizationId) {
+      // Organization-level permission check
+      const membership = await ctx.db
+        .query('members')
+        .withIndex('by_org_user', (q) =>
+          q.eq('organizationId', resource.organizationId!)
+          .eq('userId', userId)
+        )
+        .first();
+
+      if (!membership) {
+        throw new ConvexError('ACCESS_DENIED');
+      }
+
+      // Role-based permissions if needed
+      if (membership.role !== 'owner' && membership.role !== 'admin') {
+        throw new ConvexError('INSUFFICIENT_PERMISSIONS');
+      }
+    } else {
+      // Direct ownership check
+      if (resource.ownerId !== userId) {
+        throw new ConvexError('ACCESS_DENIED');
+      }
+    }
+
+    // 4. Proceed with operation
+    // ... business logic
+  },
+});
+```
+
+## Input Sanitization:
+```typescript
+function sanitizeInput(input: string): string {
+  return input
+    .trim()
+    .replace(/[<>]/g, '') // Remove potential HTML
+    .substring(0, 1000); // Limit length
+}
+
+export const createPost = mutation({
+  args: {
+    title: v.string(),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Sanitize inputs
+    const title = sanitizeInput(args.title);
+    const content = sanitizeInput(args.content);
+
+    // Validate after sanitization
+    if (title.length < 1) {
+      throw new ConvexError('TITLE_REQUIRED');
+    }
+
+    // Proceed with clean data
+    await ctx.db.insert('posts', { title, content });
+  },
+});
+```
+
+## Environment Variables:
+```typescript
+// ✅ Good - Use environment variables for secrets
+const openaiClient = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// ❌ Bad - Never hardcode secrets
+const openaiClient = new OpenAI({
+  apiKey: 'sk-your-secret-key-here',
+});
+```
+
+## Permission Levels:
+- **Authentication**: Is the user logged in?
+- **Authorization**: Does the user have permission for this action?
+- **Ownership**: Does the user own this resource?
+- **Organization**: Is the user a member with appropriate role?
+
+## Data Validation:
+```typescript
+// Always validate data before processing
+export const validateEmail = (email: string): { isValid: boolean; error?: string } => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email.trim()) {
+    return { isValid: false, error: 'Email is required' };
+  }
+
+  if (!emailRegex.test(email)) {
+    return { isValid: false, error: 'Please enter a valid email address' };
+  }
+
+  if (email.length > 254) {
+    return { isValid: false, error: 'Email address is too long' };
+  }
+
+  return { isValid: true };
+};
+```
+
+## File Upload Security:
+```typescript
+// Validate file types and sizes
+const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+const maxSize = 5 * 1024 * 1024; // 5MB
+
+if (!allowedTypes.includes(file.type)) {
+  throw new ConvexError('INVALID_FILE_TYPE');
+}
+
+if (file.size > maxSize) {
+  throw new ConvexError('FILE_TOO_LARGE');
+}
+```
