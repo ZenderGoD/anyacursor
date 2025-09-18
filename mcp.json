@@ -11,6 +11,10 @@
     "convex": {
       "command": "npx",
       "args": ["-y", "convex", "mcp"]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
