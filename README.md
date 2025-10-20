@@ -1,228 +1,50 @@
-# Anyacursor - AI Assistant
+# AI Canvas
 
-A modern AI-powered chat assistant built with Next.js, Convex backend, AI SDK, and beautiful UI components.
+A simple infinite canvas application built with Next.js and Convex.
 
-## 🚀 Features
+## Getting Started
 
-- **Next.js 15** with App Router and TypeScript
-- **Convex** for real-time backend and database
-- **AI SDK** with OpenAI integration
-- **Modern UI** with Tailwind CSS and Radix UI components
-- **Real-time chat** interface
-- **Responsive design** for all devices
-- **Dark/Light mode** support
-- **Vercel deployment** ready
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
-- **Backend**: Convex (real-time database and functions)
-- **AI**: OpenRouter (GPT-4, Claude, Gemini, etc.) + Fal for image generation
-- **UI Components**: Radix UI, Lucide React icons, Magic UI, React Bits
-- **MCP Servers**: Magic UI MCP, React Bits MCP, Convex MCP
-- **Styling**: Tailwind CSS with design system
-- **Deployment**: Vercel
-
-## 📦 Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd anyacursor
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp env.example .env.local
-   ```
-   
-   Fill in your environment variables:
-   - `NEXT_PUBLIC_CONVEX_URL`: Your Convex deployment URL
-   - `CONVEX_DEPLOYMENT`: Your Convex deployment name
-   - `OPENROUTER_API_KEY`: Your OpenRouter API key
-   - `FAL_KEY`: Your Fal API key (for image generation)
-   - `OPENAI_API_KEY`: Your OpenAI API key (optional, for direct access)
-
-4. **Set up Convex**
-   ```bash
-   npx convex dev
-   ```
-
-5. **Set up MCP Servers (Optional)**
-   ```bash
-   # Install Magic UI MCP for your IDE
-   npx @magicuidesign/cli@latest install cursor  # or windsurf, claude, cline, roo-cline
-
-   # The React Bits MCP is pre-configured in mcp.json
-   ```
-
-6. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-Open [http://localhost:3000](http://localhost:3000) to see the application.
-
-## 🗄️ Database Schema
-
-The application uses Convex with the following schema:
-
-- **Users**: Store user information and authentication
-- **Conversations**: Manage chat conversations
-- **Messages**: Store individual chat messages
-
-## 🎨 UI Components
-
-The project includes a comprehensive set of UI components:
-
-- **Button**: Various button variants and sizes
-- **Input**: Form input components
-- **Card**: Container components for content
-- **Chat Interface**: Real-time chat component
-
-## 🤖 MCP Servers
-
-This project includes three MCP (Model Context Protocol) servers for enhanced AI-assisted development:
-
-### Convex MCP Server
-- **Configuration**: Pre-configured in `mcp.json`
-- **Usage**: Database operations and schema management
-- **Features**: Create tables, add indexes, generate queries, update schemas
-
-### Magic UI MCP Server
-- **Installation**: `npx @magicuidesign/cli@latest install cursor`
-- **Usage**: Ask your IDE to generate Magic UI components like "Add a blur fade text animation"
-- **Components**: Grid backgrounds, marquee effects, morphing animations, and more
-
-### React Bits MCP Server
-- **Configuration**: Pre-configured in `mcp.json`
-- **Usage**: Generate animated React components and effects
-- **Components**: Particle effects, morphing loaders, hover animations, and interactive cards
-
-For detailed setup instructions, see:
-- [MCP_SETUP.md](./MCP_SETUP.md) - MCP server configuration
-- [AI_SETUP.md](./AI_SETUP.md) - OpenRouter and Fal setup
-
-## 🤖 AI Providers
-
-This project uses multiple AI providers for enhanced capabilities:
-
-### OpenRouter (Primary AI Provider)
-- **Access**: Hundreds of AI models through a single API
-- **Models**: GPT-4, Claude, Gemini, and many more
-- **Features**: Automatic fallbacks and cost optimization
-- **Setup**: Get API key from [OpenRouter.ai](https://openrouter.ai)
-
-### Fal (Image Generation)
-- **Specialization**: High-quality image generation
-- **Models**: Flux Schnell, Flux Pro
-- **Features**: Fast generation, style control, batch processing
-- **Setup**: Get API key from [Fal.ai](https://fal.ai)
-
-### Usage Examples
-
-```typescript
-// Text generation with OpenRouter
-import { generateAIResponse, generateWithModel } from '@/lib/ai';
-const response = await generateAIResponse("Hello, how are you?");
-const claudeResponse = await generateWithModel("Analyze this data", 'claude');
-
-// Image generation with Fal
-import { generateImageWithFal, generateImageAdvanced } from '@/lib/fal';
-const image = await generateImageWithFal("A beautiful sunset over mountains");
-const advancedImage = await generateImageAdvanced("A cyberpunk city", {
-  style: "digital art",
-  numImages: 2
-});
+1. Install dependencies:
+```bash
+pnpm install
 ```
 
-## 🚀 Deployment
+2. Set up Convex:
+```bash
+npx convex dev
+```
 
-### Vercel Deployment
+3. Copy environment variables:
+```bash
+cp env.example .env.local
+```
 
-1. **Connect your GitHub repository to Vercel**
-2. **Set environment variables** in Vercel dashboard
-3. **Deploy** - Vercel will automatically build and deploy
+4. Run the development server:
+```bash
+pnpm dev
+```
 
-### Environment Variables for Production
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Make sure to set these in your Vercel dashboard:
+## Features
 
-- `NEXT_PUBLIC_CONVEX_URL`
-- `CONVEX_DEPLOYMENT`
-- `OPENROUTER_API_KEY`
-- `FAL_KEY`
-- `OPENAI_API_KEY` (optional)
+- Next.js 15 with App Router
+- Convex backend
+- TypeScript
+- Tailwind CSS
+- Infinite canvas (coming soon)
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-anyacursor/
 ├── src/
-│   ├── app/                 # Next.js app router
-│   │   ├── globals.css     # Global styles
-│   │   ├── layout.tsx      # Root layout
-│   │   └── page.tsx        # Home page
-│   ├── components/         # React components
-│   │   ├── ui/            # Base UI components
-│   │   ├── chat/          # Chat-specific components
-│   │   └── providers/     # Context providers
-│   └── lib/               # Utility functions
-│       ├── convex.ts      # Convex client
-│       ├── ai.ts          # AI SDK configuration
-│       └── utils.ts       # Utility functions
-├── convex/                # Convex backend
-│   ├── schema.ts          # Database schema
-│   ├── users.ts           # User functions
-│   ├── conversations.ts   # Conversation functions
-│   └── messages.ts        # Message functions
-└── public/                # Static assets
+│   └── app/
+│       ├── canvas/          # Canvas page
+│       ├── layout.tsx       # Root layout
+│       ├── page.tsx         # Home page
+│       └── globals.css      # Global styles
+├── convex/                  # Convex backend
+│   ├── documents.ts         # Document mutations/queries
+│   └── schema.ts            # Database schema
+└── package.json
 ```
-
-## 🔧 Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-### Convex Commands
-
-- `npx convex dev` - Start Convex development server
-- `npx convex deploy` - Deploy to production
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Convex documentation](https://docs.convex.dev)
-2. Check the [Next.js documentation](https://nextjs.org/docs)
-3. Check the [AI SDK documentation](https://sdk.vercel.ai)
-4. Open an issue in this repository
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org) for the amazing React framework
-- [Convex](https://convex.dev) for the real-time backend
-- [Vercel AI SDK](https://sdk.vercel.ai) for AI integration
-- [Radix UI](https://radix-ui.com) for accessible components
-- [Tailwind CSS](https://tailwindcss.com) for styling

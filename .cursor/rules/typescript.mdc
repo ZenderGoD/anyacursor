@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+Always avoid using the `any` type or TypeScript workarounds unless absolutely necessary, and only with clear justification. Instead, strive to identify and resolve the root cause of type issues.
+
+Prefer using existing types or schema definitions rather than declaring new types. Whenever possible, infer types directly from the database schema, as this ensures the most accurate and up-to-date type definitions.
+
+All new file names must be in kebab-case.
+
+for combining tailwind classes, use the `cn` function from `@/lib/utils.ts` and not string templating.

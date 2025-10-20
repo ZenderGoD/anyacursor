@@ -33,6 +33,57 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# API Keys and Secrets Protection
+# Prevent any files containing API keys from being committed
+*api-key*
+*api_key*
+*apikey*
+*secret*
+*secrets*
+*key*
+*keys*
+*token*
+*tokens*
+*credential*
+*credentials*
+*password*
+*passwords*
+
+# Common API key patterns
+*sk-*
+*sk_proj-*
+*sk-or-*
+*sk-ant-*
+*ghp_*
+*gho_*
+*ghu_*
+*ghs_*
+*ghr_*
+
+# Environment and config files that might contain secrets
+.env.local
+.env.production
+.env.staging
+.env.development
+config.json
+secrets.json
+credentials.json
+api-keys.json
+.secrets
+.secret
+
+# Documentation files that might contain examples with real keys
+*documentation*
+*guide*
+*README*
+*readme*
+*GUIDE*
+*guide*
+*STYLE*
+*style*
+*CODING*
+*coding*
+
 # vercel
 .vercel
 

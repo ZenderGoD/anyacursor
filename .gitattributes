@@ -1,0 +1,24 @@
+# Git Attributes for Security
+# Prevent accidental commits of sensitive files
+
+# API Keys and Secrets
+*.env* filter=git-crypt diff=git-crypt merge=git-crypt
+*api-key* filter=git-crypt diff=git-crypt merge=git-crypt
+*api_key* filter=git-crypt diff=git-crypt merge=git-crypt
+*secret* filter=git-crypt diff=git-crypt merge=git-crypt
+*credential* filter=git-crypt diff=git-crypt merge=git-crypt
+*token* filter=git-crypt diff=git-crypt merge=git-crypt
+
+# Documentation files that might contain examples
+*documentation* filter=git-crypt diff=git-crypt merge=git-crypt
+*guide* filter=git-crypt diff=git-crypt merge=git-crypt
+*GUIDE* filter=git-crypt diff=git-crypt merge=git-crypt
+*STYLE* filter=git-crypt diff=git-crypt merge=git-crypt
+*CODING* filter=git-crypt diff=git-crypt merge=git-crypt
+
+# Config files
+config.json filter=git-crypt diff=git-crypt merge=git-crypt
+secrets.json filter=git-crypt diff=git-crypt merge=git-crypt
+credentials.json filter=git-crypt diff=git-crypt merge=git-crypt
+api-keys.json filter=git-crypt diff=git-crypt merge=git-crypt
+

@@ -1,0 +1,166 @@
+---
+description: When working with ui that has workspace or org concept
+alwaysApply: false
+---
+
+# Workspace Terminology Rule
+
+## Overview
+
+In the UI, always show "Workspace" to users instead of "Organization". The backend should continue to use "org" and "organization" terminology in API calls, variable names, database schema, and internal code.
+
+## UI Text Changes
+
+Only user-facing text, labels, placeholders, error messages, and UI elements should display "Workspace" to provide a better user experience.
+
+### What Should Show "Workspace":
+
+- Form labels (e.g., "Workspace Name", "Workspace URL")
+- Button text (e.g., "Create Workspace", "Workspace settings")
+- Dropdown menu items (e.g., "Switch Workspaces", "Create workspace")
+- Loading messages (e.g., "Loading workspace...", "Creating Workspace...")
+- Error messages (e.g., "Workspace not found", "Failed to create workspace")
+- Page titles and headings (e.g., "Workspace Information", "Create Your Workspace")
+- Placeholder text (e.g., "Start a new workspace chat...")
+- Descriptions and help text (e.g., "Manage your workspace preferences")
+- Visibility options (e.g., "Workspace" instead of "Team Only" or "Org")
+
+### What Should Keep "Organization/Org":
+
+- API calls and function names (e.g., `api.organizations.queries.list`)
+- Variable names (e.g., `currentOrg`, `organizations`)
+- Database schema and table names (e.g., `organizations` table)
+- Internal code comments and technical references
+- Type definitions and interfaces (e.g., `type Organization`)
+- Backend mutations and queries
+- File names and component names (e.g., `org-selector.tsx`)
+
+## Examples
+
+### ✅ Correct UI Text:
+
+```tsx
+<Label>Workspace Name</Label>
+<Button>Create Workspace</Button>
+<span>Switch Workspaces</span>
+<p>Loading workspace...</p>
+```
+
+### ✅ Correct Backend Code:
+
+```tsx
+const { data: organizations } = useQuery(api.organizations.queries.list);
+const currentOrg = organizations?.[0];
+type Organization = Doc<'organizations'>;
+```
+
+### ❌ Incorrect:
+
+```tsx
+<Label>Organization Name</Label>; // Should be "Workspace Name"
+const { data: workspaces } = useQuery(api.organizations.queries.list); // Should keep "organizations"
+```
+
+## Files Updated
+
+This rule was implemented across the following files:
+
+- `src/components/organization/org-setup-form.tsx`
+- `src/components/org-selector.tsx`
+- `src/components/minimal-org-selector.tsx`
+- `src/app/[orgSlug]/settings/page.tsx`
+- `src/app/[orgSlug]/dashboard/page.tsx`
+- `src/components/organization/org-references-panel.tsx`
+- `src/components/home/dashboard.tsx`
+- `src/components/product-creation-panel.tsx`
+- `src/app/[orgSlug]/page.tsx`
+- `src/components/navbar.tsx`
+- `src/app/settings/page.tsx`
+- `src/app/org-setup/page.tsx`
+- `src/components/loaders.tsx`
+- `src/app/dashboard/page.tsx`
+
+## Rationale
+
+This approach provides a better user experience with more intuitive terminology ("Workspace" is more user-friendly than "Organization") while maintaining consistency with the existing backend architecture and API structure.
+
+# Workspace Terminology Rule
+
+## Overview
+
+In the UI, always show "Workspace" to users instead of "Organization". The backend should continue to use "org" and "organization" terminology in API calls, variable names, database schema, and internal code.
+
+## UI Text Changes
+
+Only user-facing text, labels, placeholders, error messages, and UI elements should display "Workspace" to provide a better user experience.
+
+### What Should Show "Workspace":
+
+- Form labels (e.g., "Workspace Name", "Workspace URL")
+- Button text (e.g., "Create Workspace", "Workspace settings")
+- Dropdown menu items (e.g., "Switch Workspaces", "Create workspace")
+- Loading messages (e.g., "Loading workspace...", "Creating Workspace...")
+- Error messages (e.g., "Workspace not found", "Failed to create workspace")
+- Page titles and headings (e.g., "Workspace Information", "Create Your Workspace")
+- Placeholder text (e.g., "Start a new workspace chat...")
+- Descriptions and help text (e.g., "Manage your workspace preferences")
+- Visibility options (e.g., "Workspace" instead of "Team Only" or "Org")
+
+### What Should Keep "Organization/Org":
+
+- API calls and function names (e.g., `api.organizations.queries.list`)
+- Variable names (e.g., `currentOrg`, `organizations`)
+- Database schema and table names (e.g., `organizations` table)
+- Internal code comments and technical references
+- Type definitions and interfaces (e.g., `type Organization`)
+- Backend mutations and queries
+- File names and component names (e.g., `org-selector.tsx`)
+
+## Examples
+
+### ✅ Correct UI Text:
+
+```tsx
+<Label>Workspace Name</Label>
+<Button>Create Workspace</Button>
+<span>Switch Workspaces</span>
+<p>Loading workspace...</p>
+```
+
+### ✅ Correct Backend Code:
+
+```tsx
+const { data: organizations } = useQuery(api.organizations.queries.list);
+const currentOrg = organizations?.[0];
+type Organization = Doc<'organizations'>;
+```
+
+### ❌ Incorrect:
+
+```tsx
+<Label>Organization Name</Label>; // Should be "Workspace Name"
+const { data: workspaces } = useQuery(api.organizations.queries.list); // Should keep "organizations"
+```
+
+## Files Updated
+
+This rule was implemented across the following files:
+
+- `src/components/organization/org-setup-form.tsx`
+- `src/components/org-selector.tsx`
+- `src/components/minimal-org-selector.tsx`
+- `src/app/[orgSlug]/settings/page.tsx`
+- `src/app/[orgSlug]/dashboard/page.tsx`
+- `src/components/organization/org-references-panel.tsx`
+- `src/components/home/dashboard.tsx`
+- `src/components/product-creation-panel.tsx`
+- `src/app/[orgSlug]/page.tsx`
+- `src/components/navbar.tsx`
+- `src/app/settings/page.tsx`
+- `src/app/org-setup/page.tsx`
+- `src/components/loaders.tsx`
+- `src/app/dashboard/page.tsx`
+
+## Rationale
+
+This approach provides a better user experience with more intuitive terminology ("Workspace" is more user-friendly than "Organization") while maintaining consistency with the existing backend architecture and API structure.
