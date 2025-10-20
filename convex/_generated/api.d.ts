@@ -8,6 +8,9 @@
  * @module
  */
 
+import type * as aiGenerations from "../aiGenerations.js";
+import type * as canvas from "../canvas.js";
+import type * as collaboration from "../collaboration.js";
 import type * as documents from "../documents.js";
 
 import type {
@@ -25,6 +28,9 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  aiGenerations: typeof aiGenerations;
+  canvas: typeof canvas;
+  collaboration: typeof collaboration;
   documents: typeof documents;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
